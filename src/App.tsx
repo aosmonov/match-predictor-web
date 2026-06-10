@@ -48,6 +48,8 @@ import {
 } from "./utils";
 
 const GOOGLE_LOGO = "https://developers.google.com/identity/images/g-logo.png";
+const IOS_APP_STORE_URL = "https://apps.apple.com/kg/app/predictor-buddies-league/id6776138787";
+const IOS_APP_PROMPT_DISMISSED_KEY = "buddy-league-ios-app-prompt-dismissed";
 
 function ScreenHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
@@ -62,6 +64,19 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function isIphoneBrowser() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  const platform = navigator.platform || "";
+  const userAgent = navigator.userAgent || "";
+  const isIpadPretendingToBeDesktop =
+    platform === "MacIntel" && navigator.maxTouchPoints > 1;
+
+  return /iPhone|iPod/.test(userAgent) || isIpadPretendingToBeDesktop;
 }
 
 function readString(source: Record<string, unknown>, ...paths: string[]) {
@@ -275,25 +290,26 @@ function HomeScreen({
 }) {
   const copy = locales[locale].home;
   const [group, setGroup] = useState("GROUP_A");
+  const [showIosPrompt, setShowIosPrompt] = useState(false);
   const now = new Date();
-  const window = todayWindow(now);
+  const dayWindow = todayWindow(now);
   const withDates = matches.filter((match) => getMatchDate(match));
   const today = sortMatches(
     withDates.filter((match) => {
       const date = getMatchDate(match);
-      return date && date >= window.start && date <= window.end;
+      return date && date >= dayWindow.start && date <= dayWindow.end;
     }),
   );
   const completed = sortMatches(
     withDates.filter((match) => {
       const date = getMatchDate(match);
-      return date && date < window.start;
+      return date && date < dayWindow.start;
     }),
   ).reverse();
   const upcoming = sortMatches(
     withDates.filter((match) => {
       const date = getMatchDate(match);
-      return date && date > window.end;
+      return date && date > dayWindow.end;
     }),
   );
   const featured =
@@ -304,9 +320,40 @@ function HomeScreen({
     completed[0];
   const groupRows = standings[group] ?? [];
 
+  useEffect(() => {
+    if (!isIphoneBrowser()) {
+      return;
+    }
+
+    const dismissed = window.localStorage.getItem(IOS_APP_PROMPT_DISMISSED_KEY);
+    setShowIosPrompt(dismissed !== "true");
+  }, []);
+
+  function dismissIosPrompt() {
+    window.localStorage.setItem(IOS_APP_PROMPT_DISMISSED_KEY, "true");
+    setShowIosPrompt(false);
+  }
+
   return (
     <section className="screen">
       <ScreenHeader eyebrow={copy.brandText} title={copy.dashboard} />
+      {showIosPrompt ? (
+        <div className="app-download-overlay" role="dialog" aria-modal="true" aria-labelledby="ios-app-title">
+          <div className="app-download-card">
+            <div>
+              <span className="app-download-badge">iPhone app</span>
+              <h2 id="ios-app-title">{copy.appDownloadTitle}</h2>
+              <p>{copy.appDownloadBody}</p>
+            </div>
+            <div className="app-download-actions">
+              <a className="app-download-link" href={IOS_APP_STORE_URL} target="_blank" rel="noreferrer">
+                {copy.appDownloadCta}
+              </a>
+              <button type="button" onClick={dismissIosPrompt}>{copy.appDownloadDismiss}</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {loading ? <p className="muted">{copy.loadingHomeData}</p> : null}
       <Section title={copy.todayGame}>
         {featured ? <MatchCard match={featured} locale={locale} featured /> : <Empty>{copy.noMatchToday}</Empty>}
@@ -379,7 +426,7 @@ function PredictionsScreen({
   const copy = locales[locale].predictions;
   const [tab, setTab] = useState<"notPredicted" | "predicted">("notPredicted");
   const predictionMap = useMemo(() => new Map(predictions.map((item) => [predictionKey(item), item])), [predictions]);
-  const eligible = sortMatches(matches).filter((match) => match.status !== "COMPLETED");
+  const eligible = sortMatches(matches).filter((match) => match.status !== "CANCELED" && !hasStarted(match));
   const notPredicted = eligible.filter((match) => !predictionMap.has(match.id));
   const predicted = eligible.filter((match) => predictionMap.has(match.id));
   const list = tab === "notPredicted" ? notPredicted : predicted;

@@ -44,6 +44,10 @@ button {
   cursor: pointer;
 }
 
+a {
+  color: inherit;
+}
+
 button:disabled {
   cursor: not-allowed;
 }
@@ -264,6 +268,84 @@ button:disabled {
   margin: 0 0 12px;
   font-size: 16px;
   letter-spacing: -0.03em;
+}
+
+.app-download-overlay {
+  position: fixed;
+  inset: auto 12px 90px;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.app-download-card {
+  width: min(100%, 430px);
+  padding: 18px;
+  border: 1px solid rgba(187, 247, 208, 0.28);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(34, 197, 94, 0.24), transparent 14rem),
+    linear-gradient(160deg, rgba(18, 44, 29, 0.98), rgba(7, 19, 13, 0.98));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
+  pointer-events: auto;
+}
+
+.app-download-badge {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(245, 197, 66, 0.16);
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-download-card h2,
+.app-download-card p {
+  margin: 0;
+}
+
+.app-download-card h2 {
+  font-size: 20px;
+  letter-spacing: -0.04em;
+}
+
+.app-download-card p {
+  margin-top: 7px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.app-download-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.app-download-link,
+.app-download-actions button {
+  border: 0;
+  border-radius: 16px;
+  padding: 13px 14px;
+  font-size: 13px;
+  font-weight: 950;
+  text-align: center;
+  text-decoration: none;
+}
+
+.app-download-link {
+  background: var(--green);
+  color: #05210f;
+}
+
+.app-download-actions button {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
 }
 
 .section-copy,
