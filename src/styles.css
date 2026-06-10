@@ -95,7 +95,6 @@ button:disabled {
 }
 
 .primary-oauth,
-.apple-oauth,
 .secondary-action,
 .save-prediction,
 .logout-button,
@@ -115,18 +114,6 @@ button:disabled {
   margin-top: 28px;
   background: var(--text);
   color: #07130d;
-}
-
-.apple-oauth {
-  margin-top: 10px;
-  background: #050505;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.apple-mark {
-  font-size: 20px;
-  line-height: 1;
 }
 
 .oauth-badge {

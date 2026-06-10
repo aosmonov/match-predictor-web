@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import {
   GoogleAuthProvider,
-  OAuthProvider,
   browserLocalPersistence,
   createUserWithEmailAndPassword,
   deleteUser,
@@ -46,13 +45,6 @@ export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
   provider.addScope("profile");
   provider.addScope("email");
-  await signInWithPopup(auth, provider);
-}
-
-export async function signInWithApple() {
-  const provider = new OAuthProvider("apple.com");
-  provider.addScope("email");
-  provider.addScope("name");
   await signInWithPopup(auth, provider);
 }
 

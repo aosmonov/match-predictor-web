@@ -15,7 +15,6 @@ import {
   db,
   logout,
   removeCurrentAccount,
-  signInWithApple,
   signInWithEmail,
   signInWithGoogle,
   subscribeToAuth,
@@ -202,10 +201,6 @@ function LoginScreen({ locale, setLocale }: { locale: LocaleKey; setLocale: (loc
         <button className="primary-oauth" disabled={loading} onClick={() => authPopup(signInWithGoogle)}>
           <span className="oauth-badge"><img src={GOOGLE_LOGO} alt="" /></span>
           {copy.continueWithGoogle}
-        </button>
-        <button className="apple-oauth" disabled={loading} onClick={() => authPopup(signInWithApple)}>
-          <span className="apple-mark"></span>
-          {copy.continueWithApple}
         </button>
         <div className="divider" />
         {error && <p className="error">{error}</p>}
