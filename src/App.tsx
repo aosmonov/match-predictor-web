@@ -733,7 +733,7 @@ export function App() {
   const myLeaderboard = leaderboard.find((entry) => entry.id === user?.uid);
 
   if (authLoading) {
-    return <main className="loading-shell">Loading Buddy League...</main>;
+    return <main className="loading-shell">Loading Match Predictor...</main>;
   }
 
   if (!user) {
@@ -744,7 +744,7 @@ export function App() {
     <div className="app-shell">
       <div className="topbar">
         <span className="brand-dot" />
-        <b>Buddy League</b>
+        <b>Match Predictor</b>
         <LanguageSwitch locale={locale} setLocale={setLocale} />
       </div>
       <main className="content">

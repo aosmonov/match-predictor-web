@@ -187,7 +187,7 @@ export function historyTime(item: HistoryItem) {
 }
 
 export function getInitials(name: string, email?: string | null) {
-  const source = name.trim() || email?.trim() || "Buddy League";
+  const source = name.trim() || email?.trim() || "Match Predictor";
   return source
     .replace(/@.*/, "")
     .split(/[\s._-]+/)
