@@ -413,6 +413,14 @@ button:disabled {
   gap: 12px;
 }
 
+.leader-row-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
 .card-topline,
 .prediction-card-top {
   margin-bottom: 14px;

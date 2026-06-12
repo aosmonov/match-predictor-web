@@ -554,6 +554,31 @@ function PredictionCard({
 
 function LeaderboardScreen({ locale, entries, loading }: { locale: LocaleKey; entries: LeaderboardEntry[]; loading: boolean }) {
   const copy = locales[locale].leaderboard;
+  const profileCopy = locales[locale].profile;
+  const [selected, setSelected] = useState<LeaderboardEntry | null>(null);
+  const [selectedHistory, setSelectedHistory] = useState<HistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  async function showHistory(entry: LeaderboardEntry) {
+    setSelected(entry);
+    setHistoryLoading(true);
+    try {
+      const snap = await getDocs(
+        query(
+          collection(db, "history"),
+          where("uid", "==", entry.id),
+        ),
+      );
+      setSelectedHistory(
+        snap.docs
+          .map((item) => ({ ...(item.data() as Omit<HistoryItem, "id">), id: item.id }))
+          .sort((left, right) => historyTime(right) - historyTime(left)),
+      );
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
   return (
     <section className="screen">
       <ScreenHeader eyebrow={copy.subtitle} title={copy.title} />
@@ -562,15 +587,25 @@ function LeaderboardScreen({ locale, entries, loading }: { locale: LocaleKey; en
         {entries.length ? entries.map((entry, index) => {
           const name = entry.displayName || entry.email?.split("@")[0] || "Buddy";
           return (
-            <div className="leader-row" key={entry.id}>
+            <button className="leader-row leader-row-button" key={entry.id} onClick={() => void showHistory(entry)} type="button">
               <span className="rank">#{entry.rank ?? index + 1}</span>
               {entry.avatarUrl ? <img src={entry.avatarUrl} alt="" className="avatar small" /> : <span className="avatar small initials">{getInitials(name, entry.email)}</span>}
               <span className="leader-name">{name}</span>
               <strong>{entry.totalPoints ?? 0} {copy.pts}</strong>
-            </div>
+            </button>
           );
         }) : <Empty>{copy.empty}</Empty>}
       </div>
+      {selected && (
+        <Section title={`${selected.displayName || selected.email?.split("@")[0] || "Buddy"} ${profileCopy.pointsBreakdown}`}>
+          <div className="history-card">
+            {historyLoading ? <p className="muted">{copy.loading}</p> : null}
+            {!historyLoading && selectedHistory.length
+              ? selectedHistory.map((item) => <HistoryRow key={item.id} item={item} locale={locale} />)
+              : !historyLoading && <Empty>{profileCopy.noScoredPredictions}</Empty>}
+          </div>
+        </Section>
+      )}
     </section>
   );
 }
@@ -650,6 +685,10 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 
 function HistoryRow({ item, locale }: { item: HistoryItem; locale: LocaleKey }) {
   const copy = locales[locale].profile;
+  const matchTitle = item.match
+    .split(/\s+vs\s+/i)
+    .map((team) => formatTeam(team, locale))
+    .join(" vs ");
   const parts = [
     [copy.outcome, item.breakdown?.outcomePoints],
     [copy.goalDiff, item.breakdown?.goalDifferencePoints],
@@ -659,7 +698,7 @@ function HistoryRow({ item, locale }: { item: HistoryItem; locale: LocaleKey }) 
   return (
     <div className="history-row">
       <div>
-        <strong>{item.match}</strong>
+        <strong>{matchTitle}</strong>
         <p>{copy.yourPick}: {item.prediction} • {copy.result}: {item.actualScore}</p>
         <p>{parts.length ? parts.map(([label, value]) => `${label} +${value}`).join(" • ") : copy.noPointsEarned}</p>
       </div>
