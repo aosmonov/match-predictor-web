@@ -302,14 +302,13 @@ function HomeScreen({
   );
   const completed = sortMatches(
     withDates.filter((match) => {
-      const date = getMatchDate(match);
-      return date && date < dayWindow.start;
+      return match.status === "COMPLETED";
     }),
   ).reverse();
   const upcoming = sortMatches(
     withDates.filter((match) => {
       const date = getMatchDate(match);
-      return date && date > dayWindow.end;
+      return match.status === "UPCOMING" && date && date > now;
     }),
   );
   const featured =
@@ -318,6 +317,8 @@ function HomeScreen({
     today[today.length - 1] ??
     upcoming[0] ??
     completed[0];
+  const finishedList = completed.filter((match) => match.id !== featured?.id);
+  const upcomingList = upcoming.filter((match) => match.id !== featured?.id);
   const groupRows = standings[group] ?? [];
 
   useEffect(() => {
@@ -360,18 +361,18 @@ function HomeScreen({
       </Section>
       <Section title={copy.finishedGames}>
         <HorizontalList>
-          {completed.filter((match) => match.id !== featured?.id).slice(0, 8).map((match) => (
+          {finishedList.slice(0, 8).map((match) => (
             <MatchCard key={match.id} match={match} locale={locale} />
           ))}
-          {!completed.length && <Empty>{copy.finishedEmpty}</Empty>}
+          {!finishedList.length && <Empty>{copy.finishedEmpty}</Empty>}
         </HorizontalList>
       </Section>
       <Section title={copy.upcomingGames}>
         <HorizontalList>
-          {upcoming.filter((match) => match.id !== featured?.id).slice(0, 8).map((match) => (
+          {upcomingList.slice(0, 8).map((match) => (
             <MatchCard key={match.id} match={match} locale={locale} />
           ))}
-          {!upcoming.length && <Empty>{copy.upcomingEmpty}</Empty>}
+          {!upcomingList.length && <Empty>{copy.upcomingEmpty}</Empty>}
         </HorizontalList>
       </Section>
       <Section title={copy.groupStandings}>
