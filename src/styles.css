@@ -704,6 +704,18 @@ button:disabled {
   font-weight: 900;
 }
 
+.back-button {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-weight: 950;
+}
+
 .rules-panel {
   margin-top: 10px;
 }

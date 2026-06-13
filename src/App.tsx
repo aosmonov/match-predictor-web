@@ -244,6 +244,7 @@ function LoginScreen({ locale, setLocale }: { locale: LocaleKey; setLocale: (loc
 function MatchCard({ match, locale, featured = false }: { match: Match; locale: LocaleKey; featured?: boolean }) {
   const home = formatTeam(match.homeTeam, locale);
   const away = formatTeam(match.awayTeam, locale);
+  const statusLabel = formatStatus(match.status, locale);
   const isScoreVisible = match.status === "LIVE" || match.status === "COMPLETED";
   const footer =
     match.status === "LIVE"
@@ -256,7 +257,7 @@ function MatchCard({ match, locale, featured = false }: { match: Match; locale: 
     <article className={`match-card ${featured ? "featured" : ""}`}>
       <div className="card-topline">
         <span>{matchLabel(match, locale)}</span>
-        <b className={`status ${match.status.toLowerCase()}`}>{match.status}</b>
+        <b className={`status ${match.status.toLowerCase()}`}>{statusLabel}</b>
       </div>
       <div className="team-row">
         <TeamFlag src={match.homeFlag} />
@@ -271,6 +272,26 @@ function MatchCard({ match, locale, featured = false }: { match: Match; locale: 
       <p className="match-footer">{footer}</p>
     </article>
   );
+}
+
+function formatStatus(status: Match["status"], locale: LocaleKey) {
+  const copy = locales[locale].home;
+  switch (status) {
+    case "LIVE":
+      return copy.statusLive;
+    case "UPCOMING":
+      return copy.statusUpcoming;
+    case "COMPLETED":
+      return copy.statusCompleted;
+    case "POSTPONED":
+      return copy.statusPostponed;
+    case "SUSPENDED":
+      return copy.statusSuspended;
+    case "CANCELED":
+      return copy.statusCanceled;
+    default:
+      return copy.statusUnknown;
+  }
 }
 
 function TeamFlag({ src }: { src?: string | null }) {
@@ -580,6 +601,24 @@ function LeaderboardScreen({ locale, entries, loading }: { locale: LocaleKey; en
     }
   }
 
+  if (selected) {
+    const name = selected.displayName || selected.email?.split("@")[0] || "Buddy";
+    return (
+      <section className="screen">
+        <button className="back-button" onClick={() => setSelected(null)} type="button">
+          {copy.back}
+        </button>
+        <ScreenHeader eyebrow={copy.subtitle} title={name} />
+        <div className="history-card">
+          {historyLoading ? <p className="muted">{copy.loading}</p> : null}
+          {!historyLoading && selectedHistory.length
+            ? selectedHistory.map((item) => <HistoryRow key={item.id} item={item} locale={locale} />)
+            : !historyLoading && <Empty>{profileCopy.noScoredPredictions}</Empty>}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="screen">
       <ScreenHeader eyebrow={copy.subtitle} title={copy.title} />
@@ -597,16 +636,6 @@ function LeaderboardScreen({ locale, entries, loading }: { locale: LocaleKey; en
           );
         }) : <Empty>{copy.empty}</Empty>}
       </div>
-      {selected && (
-        <Section title={`${selected.displayName || selected.email?.split("@")[0] || "Buddy"} ${profileCopy.pointsBreakdown}`}>
-          <div className="history-card">
-            {historyLoading ? <p className="muted">{copy.loading}</p> : null}
-            {!historyLoading && selectedHistory.length
-              ? selectedHistory.map((item) => <HistoryRow key={item.id} item={item} locale={locale} />)
-              : !historyLoading && <Empty>{profileCopy.noScoredPredictions}</Empty>}
-          </div>
-        </Section>
-      )}
     </section>
   );
 }
