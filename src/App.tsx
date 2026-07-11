@@ -50,6 +50,8 @@ import {
 const GOOGLE_LOGO = "https://developers.google.com/identity/images/g-logo.png";
 const IOS_APP_STORE_URL = "https://apps.apple.com/kg/app/predictor-buddies-league/id6776138787";
 const IOS_APP_PROMPT_DISMISSED_KEY = "buddy-league-ios-app-prompt-dismissed";
+const ANDROID_APP_PLAY_URL = "https://play.google.com/store/apps/details?id=kg.aios.buddyleague";
+const ANDROID_APP_PROMPT_DISMISSED_KEY = "buddy-league-android-app-prompt-dismissed";
 
 function ScreenHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
@@ -77,6 +79,14 @@ function isIphoneBrowser() {
     platform === "MacIntel" && navigator.maxTouchPoints > 1;
 
   return /iPhone|iPod/.test(userAgent) || isIpadPretendingToBeDesktop;
+}
+
+function isAndroidBrowser() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  return /Android/.test(navigator.userAgent || "");
 }
 
 function readString(source: Record<string, unknown>, ...paths: string[]) {
@@ -312,11 +322,17 @@ function HomeScreen({
   const copy = locales[locale].home;
   const [group, setGroup] = useState("GROUP_A");
   const [showIosPrompt, setShowIosPrompt] = useState(false);
+  const [showAndroidPrompt, setShowAndroidPrompt] = useState(false);
   const now = new Date();
   const dayWindow = todayWindow(now);
   const withDates = matches.filter((match) => getMatchDate(match));
   const today = sortMatches(
     withDates.filter((match) => {
+      // Live matches are always "current", even if their kickoff drifted
+      // outside today's window (e.g. extra time / penalties past midnight).
+      if (match.status === "LIVE") {
+        return true;
+      }
       const date = getMatchDate(match);
       return date && date >= dayWindow.start && date <= dayWindow.end;
     }),
@@ -334,6 +350,14 @@ function HomeScreen({
   );
   const featured =
     today.find((match) => match.status === "LIVE") ??
+    today.find((match) => {
+      const date = getMatchDate(match);
+      return (
+        match.status !== "COMPLETED" &&
+        match.status !== "CANCELED" &&
+        Boolean(date && date <= now)
+      );
+    }) ??
     today.find((match) => match.status === "UPCOMING") ??
     today[today.length - 1] ??
     upcoming[0] ??
@@ -351,9 +375,23 @@ function HomeScreen({
     setShowIosPrompt(dismissed !== "true");
   }, []);
 
+  useEffect(() => {
+    if (!isAndroidBrowser()) {
+      return;
+    }
+
+    const dismissed = window.localStorage.getItem(ANDROID_APP_PROMPT_DISMISSED_KEY);
+    setShowAndroidPrompt(dismissed !== "true");
+  }, []);
+
   function dismissIosPrompt() {
     window.localStorage.setItem(IOS_APP_PROMPT_DISMISSED_KEY, "true");
     setShowIosPrompt(false);
+  }
+
+  function dismissAndroidPrompt() {
+    window.localStorage.setItem(ANDROID_APP_PROMPT_DISMISSED_KEY, "true");
+    setShowAndroidPrompt(false);
   }
 
   return (
@@ -372,6 +410,23 @@ function HomeScreen({
                 {copy.appDownloadCta}
               </a>
               <button type="button" onClick={dismissIosPrompt}>{copy.appDownloadDismiss}</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {showAndroidPrompt ? (
+        <div className="app-download-overlay" role="dialog" aria-modal="true" aria-labelledby="android-app-title">
+          <div className="app-download-card">
+            <div>
+              <span className="app-download-badge">Android app</span>
+              <h2 id="android-app-title">{copy.playDownloadTitle}</h2>
+              <p>{copy.playDownloadBody}</p>
+            </div>
+            <div className="app-download-actions">
+              <a className="app-download-link" href={ANDROID_APP_PLAY_URL} target="_blank" rel="noreferrer">
+                {copy.playDownloadCta}
+              </a>
+              <button type="button" onClick={dismissAndroidPrompt}>{copy.appDownloadDismiss}</button>
             </div>
           </div>
         </div>
@@ -448,7 +503,9 @@ function PredictionsScreen({
   const copy = locales[locale].predictions;
   const [tab, setTab] = useState<"notPredicted" | "predicted">("notPredicted");
   const predictionMap = useMemo(() => new Map(predictions.map((item) => [predictionKey(item), item])), [predictions]);
-  const eligible = sortMatches(matches).filter((match) => match.status !== "CANCELED" && !hasStarted(match));
+  const eligible = sortMatches(matches).filter(
+    (match) => match.status !== "COMPLETED" && match.status !== "CANCELED",
+  );
   const notPredicted = eligible.filter((match) => !predictionMap.has(match.id));
   const predicted = eligible.filter((match) => predictionMap.has(match.id));
   const list = tab === "notPredicted" ? notPredicted : predicted;

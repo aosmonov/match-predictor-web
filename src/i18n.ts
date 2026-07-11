@@ -56,6 +56,9 @@ export const locales = {
       appDownloadBody: "Open the iPhone app for a smoother prediction experience.",
       appDownloadCta: "Download on the App Store",
       appDownloadDismiss: "Not now",
+      playDownloadTitle: "Get Predictor Buddies League on Android",
+      playDownloadBody: "Open the Android app for a smoother prediction experience.",
+      playDownloadCta: "Get it on Google Play",
     },
     predictions: {
       voteWinPoints: "Vote & Win Points",
@@ -192,6 +195,9 @@ export const locales = {
       appDownloadBody: "В приложении прогнозировать удобнее и быстрее.",
       appDownloadCta: "Скачать в App Store",
       appDownloadDismiss: "Не сейчас",
+      playDownloadTitle: "Установите Predictor Buddies League на Android",
+      playDownloadBody: "В приложении прогнозировать удобнее и быстрее.",
+      playDownloadCta: "Скачать в Google Play",
     },
     predictions: {
       voteWinPoints: "Прогнозируй и набирай очки",
@@ -328,6 +334,9 @@ export const locales = {
       appDownloadBody: "Колдонмодо божомол берүү ыңгайлуураак.",
       appDownloadCta: "App Store'дон жүктөө",
       appDownloadDismiss: "Азыр эмес",
+      playDownloadTitle: "Predictor Buddies League'ди Android'ге жүктөңүз",
+      playDownloadBody: "Колдонмодо божомол берүү ыңгайлуураак.",
+      playDownloadCta: "Google Play'ден жүктөө",
     },
     predictions: {
       voteWinPoints: "Божомолдоп упай топто",
